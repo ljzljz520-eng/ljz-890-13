@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="永远怀念亚尔买买提・阿不来提，一位慈爱的父亲。1974.05.22 - 2011.11.01">
+    <meta name="keywords" content="纪念网站,亚尔买买提,阿不来提,怀念父亲">
+    <title>亚尔买买提・阿不来提纪念网站</title>
+    
+    <!-- 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- 样式 -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 图标 -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🕯️%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="#" class="logo">
+                <span class="logo-icon">🕯️</span>
+                <span class="logo-text">永恒怀念</span>
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#hero" class="nav-link active">首页</a></li>
+                <li><a href="#about" class="nav-link">关于父亲</a></li>
+                <li><a href="#timeline" class="nav-link">生平事迹</a></li>
+                <li><a href="#gallery" class="nav-link">照片集</a></li>
+                <li><a href="#messages" class="nav-link">纪念寄语</a></li>
+            </ul>
+            <button class="mobile-toggle" id="mobileToggle" aria-label="菜单">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero" id="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-pattern"></div>
+        
+        <div class="hero-content">
+            <div class="hero-avatar">
+                <img src="assets/images/avatar.png" alt="亚尔买买提・阿不来提" onerror="this.style.display='none'">
+            </div>
+            
+            <h1 class="hero-name" id="fatherName">亚尔买买提・阿不来提</h1>
+            <p class="hero-name-uyghur" id="fatherNameUyghur">يارمەھەممەت ئابلەت</p>
+            <p class="hero-dates">
+                <span id="birthDate">1974年05月22日</span> — <span id="deathDate">2011年11月01日</span>
+            </p>
+            
+            <!-- 时间计算模块 -->
+            <div class="time-counter">
+                <p class="time-counter-label">父亲已经离开我们</p>
+                <div class="time-counter-value" id="timeCounter">
+                    <div class="time-unit">
+                        <span class="time-number" id="years">--</span>
+                        <span class="time-label">年</span>
+                    </div>
+                    <div class="time-unit">
+                        <span class="time-number" id="months">--</span>
+                        <span class="time-label">月</span>
+                    </div>
+                    <div class="time-unit">
+                        <span class="time-number" id="days">--</span>
+                        <span class="time-label">天</span>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="hero-quote" id="heroQuote">
+                "您的音容笑貌，永远铭刻在我们心中"
+            </p>
+        </div>
+        
+        <a href="#about" class="scroll-indicator" aria-label="向下滚动">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+        </a>
+    </section>
+
+    <!-- 关于简介 -->
+    <section class="section about-section" id="about">
+        <div class="container">
+            <header class="section-header">
+                <h2 class="section-title">关于父亲</h2>
+                <p class="section-subtitle">用文字铭记，用心灵怀念</p>
+            </header>
+            
+            <div class="about-content">
+                <div class="about-image">
+                    <img src="assets/images/about.jpg" alt="父亲的照片" onerror="this.parentElement.style.display='none'">
+                </div>
+                <div class="about-text" id="aboutText">
+                    <p>亚尔买买提・阿不来提，一位慈爱的父亲，一个正直善良的人。他用自己的一生诠释了什么是责任与担当，什么是爱与奉献。</p>
+                    <p>虽然他已经离开我们多年，但他的精神永远活在我们心中。他教会我们如何做人，如何面对生活中的困难与挑战。</p>
+                    <p>这个网站是我们对父亲永恒的怀念，希望通过这里，让更多的人了解他，记住他。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 生平时间线 -->
+    <section class="section timeline-section" id="timeline">
+        <div class="container">
+            <header class="section-header">
+                <h2 class="section-title">生平事迹</h2>
+                <p class="section-subtitle">记录父亲人生中的重要时刻</p>
+            </header>
+            
+            <div class="timeline" id="timelineContainer">
+                <!-- 时间线内容将通过JS动态加载 -->
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 照片集 -->
+    <section class="section gallery-section" id="gallery">
+        <div class="container">
+            <header class="section-header">
+                <h2 class="section-title">珍贵照片</h2>
+                <p class="section-subtitle">那些温暖的瞬间，永远留在我们心中</p>
+            </header>
+            
+            <div class="gallery-grid" id="galleryContainer">
+                <!-- 照片内容将通过JS动态加载 -->
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 纪念寄语 -->
+    <section class="section messages-section" id="messages">
+        <div class="container">
+            <header class="section-header">
+                <h2 class="section-title">纪念寄语</h2>
+                <p class="section-subtitle">留下您对父亲的思念与祝福</p>
+            </header>
+            
+            <div class="messages-grid" id="messagesContainer">
+                <!-- 寄语内容将通过JS动态加载 -->
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+            
+            <!-- 留言表单 -->
+            <div class="message-form-container">
+                <h3 class="message-form-title">写下您的寄语</h3>
+                <form id="messageForm">
+                    <div class="form-group">
+                        <label class="form-label" for="authorName">您的称呼</label>
+                        <input type="text" id="authorName" name="author_name" class="form-input" placeholder="请输入您的称呼" required maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="messageContent">寄语内容</label>
+                        <textarea id="messageContent" name="content" class="form-textarea" placeholder="请写下您对父亲的思念或祝福..." required minlength="5" maxlength="1000"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                        提交寄语
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-memorial" id="footerMemorial">
+                    永远怀念亲爱的父亲 亚尔买买提・阿不来提 (1974-2011)
+                </p>
+                
+                <nav class="footer-nav">
+                    <a href="#hero">首页</a>
+                    <a href="#about">关于父亲</a>
+                    <a href="#timeline">生平事迹</a>
+                    <a href="#gallery">照片集</a>
+                    <a href="#messages">纪念寄语</a>
+                    <a href="/admin/">后台管理</a>
+                </nav>
+                
+                <div class="footer-divider"></div>
+                
+                <p class="footer-copyright">
+                    © 2024 版权所有 <a href="https://www.yiningyun.com" target="_blank" rel="noopener">合肥市奕宁云网络科技有限公司</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast 通知容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 图片查看模态框 -->
+    <div class="modal-overlay" id="lightboxModal">
+        <div class="modal lightbox">
+            <button class="modal-close" id="lightboxClose" aria-label="关闭">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <img id="lightboxImage" src="" alt="">
+        </div>
+    </div>
+
+    <!-- 主脚本 -->
+    <script src="js/app.js"></script>
+</body>
+</html>

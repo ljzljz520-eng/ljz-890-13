@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 - 亚尔买买提・阿不来提纪念网站</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-icon">🕯️</span>
+            <span class="sidebar-title">纪念网站管理</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">仪表盘</span>
+            </a>
+            <a href="#config" class="nav-item" data-page="config">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">网站配置</span>
+            </a>
+            <a href="#life-events" class="nav-item" data-page="life-events">
+                <span class="nav-icon">📅</span>
+                <span class="nav-text">生平管理</span>
+            </a>
+            <a href="#photos" class="nav-item" data-page="photos">
+                <span class="nav-icon">🖼️</span>
+                <span class="nav-text">照片管理</span>
+            </a>
+            <a href="#messages" class="nav-item" data-page="messages">
+                <span class="nav-icon">💬</span>
+                <span class="nav-text">寄语管理</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="/" class="nav-item" target="_blank">
+                <span class="nav-icon">🌐</span>
+                <span class="nav-text">查看网站</span>
+            </a>
+        </div>
+    </aside>
+    
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 顶部栏 -->
+        <header class="topbar">
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <div class="topbar-right">
+                <div class="user-info">
+                    <span class="user-avatar" id="userAvatar">A</span>
+                    <span class="user-name" id="userName">管理员</span>
+                </div>
+                <button class="btn-logout" id="logoutBtn">退出登录</button>
+            </div>
+        </header>
+        
+        <!-- 页面容器 -->
+        <div class="page-container" id="pageContainer">
+            <!-- 仪表盘 -->
+            <div class="page active" id="page-dashboard">
+                <div class="page-header">
+                    <h1>仪表盘</h1>
+                    <p>欢迎使用纪念网站后台管理系统</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📅</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-events">-</span>
+                            <span class="stat-label">生平事件</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🖼️</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-photos">-</span>
+                            <span class="stat-label">照片数量</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">💬</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-messages">-</span>
+                            <span class="stat-label">寄语总数</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">⏳</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-pending">-</span>
+                            <span class="stat-label">待审核</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quick-actions">
+                    <h2>快捷操作</h2>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="navigateTo('life-events')">
+                            <span>➕</span> 添加生平事件
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('photos')">
+                            <span>📷</span> 上传照片
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('messages')">
+                            <span>✅</span> 审核寄语
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 网站配置 -->
+            <div class="page" id="page-config">
+                <div class="page-header">
+                    <h1>网站配置</h1>
+                    <p>管理网站的基础信息和显示内容</p>
+                </div>
+                
+                <form class="config-form" id="configForm">
+                    <div class="form-section">
+                        <h3>基础信息</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">网站标题</label>
+                                <input type="text" class="form-input" name="site_title" id="config_site_title">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">网站副标题</label>
+                                <input type="text" class="form-input" name="site_subtitle" id="config_site_subtitle">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>父亲信息</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">姓名（中文）</label>
+                                <input type="text" class="form-input" name="father_name" id="config_father_name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">姓名（维吾尔语）</label>
+                                <input type="text" class="form-input" name="father_name_uyghur" id="config_father_name_uyghur" dir="rtl">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">出生日期</label>
+                                <input type="date" class="form-input" name="birth_date" id="config_birth_date">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">逝世日期</label>
+                                <input type="date" class="form-input" name="death_date" id="config_death_date">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>首页内容</h3>
+                        <div class="form-group">
+                            <label class="form-label">首页寄语</label>
+                            <input type="text" class="form-input" name="hero_quote" id="config_hero_quote">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">关于简介</label>
+                            <textarea class="form-textarea" name="about_text" id="config_about_text" rows="5"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>页脚信息</h3>
+                        <div class="form-group">
+                            <label class="form-label">页脚文字</label>
+                            <input type="text" class="form-input" name="footer_text" id="config_footer_text">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">版权公司</label>
+                                <input type="text" class="form-input" name="copyright_company" id="config_copyright_company" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">版权网站</label>
+                                <input type="text" class="form-input" name="copyright_website" id="config_copyright_website" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">保存配置</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 生平管理 -->
+            <div class="page" id="page-life-events">
+                <div class="page-header">
+                    <h1>生平管理</h1>
+                    <button class="btn btn-primary" onclick="showEventModal()">
+                        <span>➕</span> 添加事件
+                    </button>
+                </div>
+                
+                <div class="data-table-container">
+                    <table class="data-table" id="eventsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>日期</th>
+                                <th>标题</th>
+                                <th>内容</th>
+                                <th>排序</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 照片管理 -->
+            <div class="page" id="page-photos">
+                <div class="page-header">
+                    <h1>照片管理</h1>
+                    <button class="btn btn-primary" onclick="showPhotoModal()">
+                        <span>➕</span> 添加照片
+                    </button>
+                </div>
+                
+                <div class="photos-grid" id="photosGrid">
+                </div>
+            </div>
+            
+            <!-- 寄语管理 -->
+            <div class="page" id="page-messages">
+                <div class="page-header">
+                    <h1>寄语管理</h1>
+                    <p>审核和管理访客留言</p>
+                </div>
+                
+                <div class="data-table-container">
+                    <table class="data-table" id="messagesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>留言者</th>
+                                <th>内容</th>
+                                <th>状态</th>
+                                <th>时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messagesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 模态框：事件编辑 -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="eventModalTitle">添加事件</h3>
+                <button class="modal-close" onclick="closeEventModal()">×</button>
+            </div>
+            <form class="modal-body" id="eventForm">
+                <input type="hidden" id="eventId">
+                <div class="form-group">
+                    <label class="form-label">事件日期 *</label>
+                    <input type="date" class="form-input" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">事件标题 *</label>
+                    <input type="text" class="form-input" id="eventTitle" required maxlength="255">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">事件内容</label>
+                    <textarea class="form-textarea" id="eventContent" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">排序顺序</label>
+                    <input type="number" class="form-input" id="eventSort" value="0" min="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEventModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 模态框：照片编辑 -->
+    <div class="modal-overlay" id="photoModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="photoModalTitle">添加照片</h3>
+                <button class="modal-close" onclick="closePhotoModal()">×</button>
+            </div>
+            <form class="modal-body" id="photoForm">
+                <input type="hidden" id="photoId">
+                <div class="form-group">
+                    <label class="form-label">照片标题 *</label>
+                    <input type="text" class="form-input" id="photoTitle" required maxlength="255">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">照片描述</label>
+                    <textarea class="form-textarea" id="photoDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">上传照片</label>
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('photoFile').click()" style="cursor:pointer;">
+                        <input type="file" id="photoFile" accept="image/*" style="display:none">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <span>📷</span>
+                            <p>点击上传照片</p>
+                        </div>
+                        <img id="photoPreview" src="" alt="" style="display:none;max-width:100%;border-radius:8px;">
+                    </div>
+                    <p style="font-size:12px;color:#666;margin-top:8px;">点击图片区域可更换照片</p>
+                    <input type="hidden" id="photoUrl">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">排序顺序</label>
+                    <input type="number" class="form-input" id="photoSort" value="0" min="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePhotoModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 确认对话框 -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">确认操作</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">确定要执行此操作吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmModal()">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmBtn">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script src="js/admin.js"></script>
+</body>
+</html>

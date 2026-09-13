@@ -1,0 +1,74 @@
+name: memorial-website-890
+
+services:
+  # 数据库服务
+  db:
+    image: mysql:8.0
+    container_name: memorial-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: memorial
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - memorial-network
+
+  # 后端服务
+  backend:
+    build: ./backend
+    container_name: memorial-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: memorial
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    volumes:
+      - uploads_data:/var/www/html/public/uploads
+    ports:
+      - "8000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - memorial-network
+
+  # 前端服务
+  frontend:
+    build: ./frontend
+    container_name: memorial-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - memorial-network
+
+volumes:
+  db_data:
+    name: memorial-db-data
+  uploads_data:
+    name: memorial-uploads-data
+
+networks:
+  memorial-network:
+    name: memorial-network
+    driver: bridge

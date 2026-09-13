@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4AF37"/>
+      <stop offset="100%" style="stop-color:#B8960E"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#1a365d"/>
+  <circle cx="100" cy="100" r="85" fill="url(#gold)" opacity="0.2"/>
+  <text x="100" y="105" text-anchor="middle" font-family="serif" font-size="48" fill="#D4AF37">亚</text>
+  <text x="100" y="150" text-anchor="middle" font-family="sans-serif" font-size="14" fill="rgba(255,255,255,0.8)">1974-2011</text>
+</svg>
