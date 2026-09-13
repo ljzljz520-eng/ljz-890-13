@@ -134,7 +134,10 @@
                 <h2 class="section-title">珍贵照片</h2>
                 <p class="section-subtitle">那些温暖的瞬间，永远留在我们心中</p>
             </header>
-            
+
+            <!-- 相册分类标签 -->
+            <nav class="album-tabs" id="albumTabs" aria-label="相册分类"></nav>
+
             <div class="gallery-grid" id="galleryContainer">
                 <!-- 照片内容将通过JS动态加载 -->
                 <div class="loading">
@@ -220,6 +223,11 @@
                 </svg>
             </button>
             <img id="lightboxImage" src="" alt="">
+            <div class="lightbox-caption" id="lightboxCaption">
+                <h4 id="lightboxTitle"></h4>
+                <p class="lightbox-date" id="lightboxDate"></p>
+                <p class="lightbox-desc" id="lightboxDesc"></p>
+            </div>
         </div>
     </div>
 

@@ -30,6 +30,10 @@
                 <span class="nav-icon">📅</span>
                 <span class="nav-text">生平管理</span>
             </a>
+            <a href="#albums" class="nav-item" data-page="albums">
+                <span class="nav-icon">📁</span>
+                <span class="nav-text">相册管理</span>
+            </a>
             <a href="#photos" class="nav-item" data-page="photos">
                 <span class="nav-icon">🖼️</span>
                 <span class="nav-text">照片管理</span>
@@ -232,6 +236,34 @@
                 </div>
             </div>
             
+            <!-- 相册管理 -->
+            <div class="page" id="page-albums">
+                <div class="page-header">
+                    <h1>相册管理</h1>
+                    <button class="btn btn-primary" onclick="showAlbumModal()">
+                        <span>➕</span> 添加相册
+                    </button>
+                </div>
+                <p class="page-tip">默认相册：家庭、工作、朋友、故乡、重要时刻。删除相册不会删除其中的照片，照片将转为未分类。</p>
+
+                <div class="data-table-container">
+                    <table class="data-table" id="albumsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>相册名称</th>
+                                <th>说明</th>
+                                <th>照片数</th>
+                                <th>排序</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="albumsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- 照片管理 -->
             <div class="page" id="page-photos">
                 <div class="page-header">
@@ -240,7 +272,12 @@
                         <span>➕</span> 添加照片
                     </button>
                 </div>
-                
+
+                <div class="filter-bar">
+                    <label for="photoAlbumFilter">按相册筛选：</label>
+                    <select id="photoAlbumFilter" class="form-select"></select>
+                </div>
+
                 <div class="photos-grid" id="photosGrid">
                 </div>
             </div>
@@ -305,6 +342,35 @@
         </div>
     </div>
     
+    <!-- 模态框：相册编辑 -->
+    <div class="modal-overlay" id="albumModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="albumModalTitle">添加相册</h3>
+                <button class="modal-close" onclick="closeAlbumModal()">×</button>
+            </div>
+            <form class="modal-body" id="albumForm">
+                <input type="hidden" id="albumId">
+                <div class="form-group">
+                    <label class="form-label">相册名称 *</label>
+                    <input type="text" class="form-input" id="albumName" required maxlength="100" placeholder="如：家庭、工作、朋友、故乡、重要时刻">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">相册说明</label>
+                    <input type="text" class="form-input" id="albumDescription" maxlength="255" placeholder="一句话描述这个相册">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">排序顺序</label>
+                    <input type="number" class="form-input" id="albumSort" value="0" min="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAlbumModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 模态框：照片编辑 -->
     <div class="modal-overlay" id="photoModal">
         <div class="modal">
@@ -318,9 +384,19 @@
                     <label class="form-label">照片标题 *</label>
                     <input type="text" class="form-input" id="photoTitle" required maxlength="255">
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">所属相册</label>
+                        <select class="form-input" id="photoAlbum"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">拍摄时间</label>
+                        <input type="date" class="form-input" id="photoTakenAt">
+                    </div>
+                </div>
                 <div class="form-group">
-                    <label class="form-label">照片描述</label>
-                    <textarea class="form-textarea" id="photoDescription" rows="3"></textarea>
+                    <label class="form-label">照片说明</label>
+                    <textarea class="form-textarea" id="photoDescription" rows="3" placeholder="记录这张照片背后的故事..."></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">上传照片</label>
@@ -332,8 +408,9 @@
                         </div>
                         <img id="photoPreview" src="" alt="" style="display:none;max-width:100%;border-radius:8px;">
                     </div>
-                    <p style="font-size:12px;color:#666;margin-top:8px;">点击图片区域可更换照片</p>
+                    <p style="font-size:12px;color:#666;margin-top:8px;">点击图片区域可更换照片；原图与缩略图将分开保存</p>
                     <input type="hidden" id="photoUrl">
+                    <input type="hidden" id="photoThumbUrl">
                 </div>
                 <div class="form-group">
                     <label class="form-label">排序顺序</label>

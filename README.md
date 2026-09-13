@@ -55,7 +55,7 @@
 ### 主站功能
 - 🕐 **实时时间计算** - 精确显示"父亲已离开我们XX年XX月XX天"
 - 📜 **生平时间线** - 记录重要人生节点
-- 🖼️ **照片集** - 瀑布流展示珍贵照片
+- 🖼️ **分类照片集** - 按相册（家庭/工作/朋友/故乡/重要时刻）分类浏览，列表加载缩略图、点击查看原图，整体风格庄重克制，无夸张动画
 - 💬 **纪念寄语墙** - 访客可提交怀念留言
 - 🎨 **维吾尔族特色设计** - 融入民族纹样与配色
 
@@ -63,7 +63,8 @@
 - 📊 仪表盘统计
 - ⚙️ 网站配置管理（所有前端内容可编辑）
 - 📅 生平事件CRUD
-- 🖼️ 照片上传管理（支持20MB图片）
+- 📁 相册管理（预置家庭、工作、朋友、故乡、重要时刻五类相册，可增删改）
+- 🖼️ 照片上传管理（支持20MB图片，上传时填写说明与拍摄时间；原图与缩略图分开保存于 `uploads/originals/` 与 `uploads/thumbs/`，删除照片时自动清理文件）
 - 💬 寄语审核管理
 
 ---
@@ -129,16 +130,18 @@ docker compose up --build
 │       └── js/admin.js         # 后台脚本
 │
 ├── backend/                    # PHP 后端
-│   ├── Dockerfile              # PHP+Apache 容器配置
-│   ├── init-data.php           # 启动时密码修复脚本
+│   ├── Dockerfile              # PHP+Apache 容器配置（含GD缩略图扩展）
+│   ├── init-data.php           # 启动时密码修复与结构迁移脚本
 │   ├── public/index.php        # API入口（路由分发）
 │   ├── src/
 │   │   ├── Config/Database.php # 数据库连接
-│   │   ├── Controllers/        # 控制器（7个）
-│   │   ├── Models/             # 数据模型（5个）
+│   │   ├── Controllers/        # 控制器（8个，含相册管理）
+│   │   ├── Models/             # 数据模型（6个，含相册）
 │   │   ├── Middleware/         # JWT认证中间件
 │   │   └── Utils/              # 工具类
 │   └── uploads/                # 上传文件目录
+│       ├── originals/          # 原图
+│       └── thumbs/             # 缩略图
 │
 └── database/
     └── init.sql                # 数据库初始化脚本
@@ -173,7 +176,8 @@ docker compose up --build
 |------|------|------|
 | GET | /api/config | 获取网站配置 |
 | GET | /api/life-events | 获取生平事件 |
-| GET | /api/photos | 获取照片列表 |
+| GET | /api/albums | 获取相册列表（含照片数） |
+| GET | /api/photos | 获取照片列表（支持 `?album_id=` 筛选） |
 | GET | /api/messages | 获取已审核寄语 |
 | GET | /api/time-since | 获取离开时间计算 |
 | POST | /api/messages | 提交寄语 |
@@ -184,9 +188,10 @@ docker compose up --build
 |------|------|------|
 | GET | /api/admin/dashboard | 仪表盘统计 |
 | POST | /api/admin/config | 保存配置 |
-| POST | /api/admin/upload | 上传图片 |
+| POST | /api/admin/upload | 上传图片（自动生成缩略图，返回 `url` 与 `thumb_url`） |
 | CRUD | /api/admin/life-events | 生平事件管理 |
-| CRUD | /api/admin/photos | 照片管理 |
+| CRUD | /api/admin/albums | 相册管理（删除相册时照片转为未分类） |
+| CRUD | /api/admin/photos | 照片管理（含相册、说明、拍摄时间） |
 | CRUD | /api/admin/messages | 寄语管理 |
 
 ---
@@ -229,6 +234,9 @@ A: 容器启动时会自动修复密码，请确保 `init-data.php` 正常执行
 
 **Q: 上传图片不显示？**
 A: 确保nginx配置正确代理 `/uploads/` 到后端
+
+**Q: 从旧版本升级后相册/拍摄时间字段不存在？**
+A: 无需手动操作。后端容器启动时会运行 `init-data.php`，自动创建相册表（并预置家庭、工作、朋友、故乡、重要时刻）、为照片表补充 `album_id`/`thumb_url`/`taken_at` 字段及索引，已有数据不受影响
 
 ---
 

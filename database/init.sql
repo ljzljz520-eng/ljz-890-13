@@ -73,22 +73,45 @@ INSERT INTO life_events (title, event_date, content, sort_order, created_at) VAL
 ('永远离开', '2011-11-01', '不幸离世，留下了无尽的思念和怀念。', 5, NOW());
 
 -- =====================================================
+-- 相册表
+-- =====================================================
+CREATE TABLE IF NOT EXISTS albums (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL COMMENT '相册名称',
+    description VARCHAR(255) DEFAULT '' COMMENT '相册说明',
+    sort_order INT DEFAULT 0 COMMENT '排序顺序',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='相册表';
+
+-- 预置分类相册：家庭、工作、朋友、故乡、重要时刻
+INSERT INTO albums (name, description, sort_order, created_at) VALUES
+('家庭', '与家人共度的温馨时光', 1, NOW()),
+('工作', '辛勤工作留下的身影', 2, NOW()),
+('朋友', '与朋友相聚的珍贵瞬间', 3, NOW()),
+('故乡', '故乡的山山水水与旧居', 4, NOW()),
+('重要时刻', '人生中值得铭记的重要时刻', 5, NOW());
+
+-- =====================================================
 -- 照片表
 -- =====================================================
 CREATE TABLE IF NOT EXISTS photos (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    album_id INT NULL COMMENT '所属相册ID',
     title VARCHAR(255) NOT NULL COMMENT '照片标题',
-    image_url VARCHAR(500) NOT NULL COMMENT '图片URL',
-    description TEXT COMMENT '照片描述',
+    image_url VARCHAR(500) NOT NULL COMMENT '原图URL',
+    thumb_url VARCHAR(500) DEFAULT NULL COMMENT '缩略图URL',
+    description TEXT COMMENT '照片说明',
+    taken_at DATE DEFAULT NULL COMMENT '拍摄时间',
     sort_order INT DEFAULT 0 COMMENT '排序顺序',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    CONSTRAINT fk_photos_album FOREIGN KEY (album_id) REFERENCES albums(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='照片表';
 
 -- 插入示例照片
-INSERT INTO photos (title, image_url, description, sort_order, created_at) VALUES
-('温馨时刻', '/assets/images/gallery/photo1.png', '父亲与家人在一起的温馨时光。', 1, NOW()),
-('工作中的父亲', '/assets/images/gallery/photo2.png', '父亲认真工作的样子，总是那么专注。', 2, NOW()),
-('节日合影', '/assets/images/gallery/photo3.png', '节日期间的全家福，幸福洋溢。', 3, NOW());
+INSERT INTO photos (album_id, title, image_url, thumb_url, description, taken_at, sort_order, created_at) VALUES
+(1, '温馨时刻', '/assets/images/gallery/photo1.png', NULL, '父亲与家人在一起的温馨时光。', '2005-02-18', 1, NOW()),
+(2, '工作中的父亲', '/assets/images/gallery/photo2.png', NULL, '父亲认真工作的样子，总是那么专注。', '2008-06-10', 2, NOW()),
+(5, '节日合影', '/assets/images/gallery/photo3.png', NULL, '节日期间的全家福，幸福洋溢。', '2010-09-01', 3, NOW());
 
 -- =====================================================
 -- 纪念寄语表
@@ -112,4 +135,6 @@ INSERT INTO messages (author_name, content, status, created_at) VALUES
 -- =====================================================
 CREATE INDEX idx_life_events_date ON life_events(event_date);
 CREATE INDEX idx_photos_sort ON photos(sort_order);
+CREATE INDEX idx_photos_album ON photos(album_id);
+CREATE INDEX idx_photos_taken_at ON photos(taken_at);
 CREATE INDEX idx_messages_status ON messages(status);

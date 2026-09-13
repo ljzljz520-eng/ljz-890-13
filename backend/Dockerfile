@@ -1,7 +1,14 @@
 FROM php:8.2-apache
 
-# 安装 PDO MySQL 扩展
-RUN docker-php-ext-install pdo pdo_mysql
+# 安装 PDO MySQL 与 GD（缩略图生成）扩展
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libpng-dev \
+        libjpeg62-turbo-dev \
+        libwebp-dev \
+        libfreetype6-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
+    && docker-php-ext-install pdo pdo_mysql gd \
+    && rm -rf /var/lib/apt/lists/*
 
 # 配置 PHP 上传限制
 RUN echo "upload_max_filesize = 20M" >> /usr/local/etc/php/conf.d/uploads.ini && \
@@ -17,8 +24,9 @@ WORKDIR /var/www/html
 # 复制项目文件
 COPY . /var/www/html/
 
-# 创建上传目录在public内并设置权限
-RUN mkdir -p /var/www/html/public/uploads && \
+# 创建上传目录（原图与缩略图分开存放）并设置权限
+RUN mkdir -p /var/www/html/public/uploads/originals && \
+    mkdir -p /var/www/html/public/uploads/thumbs && \
     chown -R www-data:www-data /var/www/html/public/uploads && \
     chmod -R 755 /var/www/html/public/uploads
 

@@ -72,14 +72,16 @@ try {
             '/' => ['App\Controllers\HomeController', 'index'],
             '/config' => ['App\Controllers\ConfigController', 'getPublicConfig'],
             '/life-events' => ['App\Controllers\LifeEventController', 'getAll'],
+            '/albums' => ['App\Controllers\AlbumController', 'getAll'],
             '/photos' => ['App\Controllers\PhotoController', 'getAll'],
             '/messages' => ['App\Controllers\MessageController', 'getApproved'],
             '/time-since' => ['App\Controllers\HomeController', 'getTimeSince'],
-            
+
             // 后台路由
             '/admin/dashboard' => ['App\Controllers\AdminController', 'dashboard'],
             '/admin/config' => ['App\Controllers\ConfigController', 'getAll'],
             '/admin/life-events' => ['App\Controllers\LifeEventController', 'getAllAdmin'],
+            '/admin/albums' => ['App\Controllers\AlbumController', 'getAllAdmin'],
             '/admin/photos' => ['App\Controllers\PhotoController', 'getAllAdmin'],
             '/admin/messages' => ['App\Controllers\MessageController', 'getAll'],
         ],
@@ -91,16 +93,19 @@ try {
             // 后台路由
             '/admin/config' => ['App\Controllers\ConfigController', 'update'],
             '/admin/life-events' => ['App\Controllers\LifeEventController', 'create'],
+            '/admin/albums' => ['App\Controllers\AlbumController', 'create'],
             '/admin/photos' => ['App\Controllers\PhotoController', 'create'],
             '/admin/upload' => ['App\Controllers\UploadController', 'upload'],
         ],
         'PUT' => [
             '/admin/life-events/{id}' => ['App\Controllers\LifeEventController', 'update'],
+            '/admin/albums/{id}' => ['App\Controllers\AlbumController', 'update'],
             '/admin/photos/{id}' => ['App\Controllers\PhotoController', 'update'],
             '/admin/messages/{id}' => ['App\Controllers\MessageController', 'update'],
         ],
         'DELETE' => [
             '/admin/life-events/{id}' => ['App\Controllers\LifeEventController', 'delete'],
+            '/admin/albums/{id}' => ['App\Controllers\AlbumController', 'delete'],
             '/admin/photos/{id}' => ['App\Controllers\PhotoController', 'delete'],
             '/admin/messages/{id}' => ['App\Controllers\MessageController', 'delete'],
         ],

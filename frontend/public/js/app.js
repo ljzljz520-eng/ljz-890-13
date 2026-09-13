@@ -6,6 +6,30 @@
 // API基础地址
 const API_BASE = '/api';
 
+// 照片加载失败时的温和占位图（米灰底色 + 简笔相框，安静不突兀）
+const PHOTO_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">' +
+    '<rect width="400" height="300" fill="#ece7db"/>' +
+    '<g fill="none" stroke="#b9b2a2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
+    '<rect x="160" y="100" width="80" height="64" rx="4"/>' +
+    '<circle cx="180" cy="120" r="6"/>' +
+    '<path d="M166 156 L186 136 L200 148 L214 134 L234 156"/>' +
+    '</g>' +
+    '<text x="200" y="200" text-anchor="middle" fill="#8f8878" font-size="15" font-family="sans-serif">照片暂时无法显示</text>' +
+    '</svg>'
+);
+
+/**
+ * 图片加载失败时的温和占位处理
+ * （挂载到 window 供内联 onerror 调用）
+ */
+function handleImgError(img) {
+    img.onerror = null; // 防止占位图异常时陷入循环
+    img.src = PHOTO_PLACEHOLDER;
+    img.classList.add('img-fallback');
+}
+window.handleImgError = handleImgError;
+
 // ==================== 工具函数 ====================
 
 /**
@@ -71,6 +95,15 @@ function showToast(message, type = 'success') {
 function formatDate(dateStr) {
     const date = new Date(dateStr);
     return `${date.getFullYear()}年${String(date.getMonth() + 1).padStart(2, '0')}月${String(date.getDate()).padStart(2, '0')}日`;
+}
+
+/**
+ * 格式化拍摄时间（纯日期字符串按原样解析，避免时区偏移）
+ */
+function formatTakenAt(dateStr) {
+    const parts = String(dateStr || '').split('-');
+    if (parts.length !== 3) return dateStr || '';
+    return `${parts[0]}年${parts[1]}月${parts[2]}日`;
 }
 
 // ==================== 时间计算模块 ====================
@@ -183,8 +216,8 @@ async function loadLifeEvents() {
             return;
         }
         
-        container.innerHTML = events.map((event, index) => `
-            <div class="timeline-item fade-in" style="animation-delay: ${index * 0.1}s">
+        container.innerHTML = events.map(event => `
+            <div class="timeline-item">
                 <div class="timeline-dot"></div>
                 <div class="timeline-date">
                     ${formatDate(event.event_date)}
@@ -202,51 +235,130 @@ async function loadLifeEvents() {
     }
 }
 
-// ==================== 照片集 ====================
+// ==================== 照片集（按相册分类） ====================
+
+let albumsData = [];
+let currentAlbumId = 'all';
+
+/**
+ * 加载相册分类并渲染标签
+ */
+async function loadAlbums() {
+    const tabsContainer = document.getElementById('albumTabs');
+
+    try {
+        const response = await apiRequest('/albums');
+        albumsData = response.data || [];
+        renderAlbumTabs();
+    } catch (error) {
+        // 相册加载失败时静默降级：隐藏标签栏，仍展示全部照片
+        if (tabsContainer) tabsContainer.style.display = 'none';
+        console.error('加载相册失败:', error);
+    }
+}
+
+/**
+ * 渲染相册分类标签
+ */
+function renderAlbumTabs() {
+    const tabsContainer = document.getElementById('albumTabs');
+    if (!tabsContainer) return;
+
+    const tabs = [{ id: 'all', name: '全部' }, ...albumsData];
+
+    tabsContainer.innerHTML = tabs.map(album => `
+        <button type="button"
+                class="album-tab ${String(currentAlbumId) === String(album.id) ? 'active' : ''}"
+                data-album-id="${album.id}">
+            ${escapeHtml(album.name)}
+        </button>
+    `).join('');
+
+    tabsContainer.querySelectorAll('.album-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const albumId = tab.dataset.albumId;
+            if (String(currentAlbumId) === String(albumId)) return;
+
+            currentAlbumId = albumId === 'all' ? 'all' : parseInt(albumId, 10);
+            tabsContainer.querySelectorAll('.album-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            loadPhotos(currentAlbumId);
+        });
+    });
+}
 
 /**
  * 加载照片
  */
-async function loadPhotos() {
+async function loadPhotos(albumId = 'all') {
     const container = document.getElementById('galleryContainer');
-    
+
     try {
-        const response = await apiRequest('/photos');
+        const endpoint = albumId === 'all' ? '/photos' : `/photos?album_id=${albumId}`;
+        const response = await apiRequest(endpoint);
         const photos = response.data || [];
-        
+
         if (photos.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:#fff;">暂无照片</p>';
+            container.innerHTML = '<p class="gallery-empty">这个相册暂时没有照片</p>';
             return;
         }
-        
-        container.innerHTML = photos.map((photo, index) => `
-            <div class="gallery-item fade-in" style="animation-delay: ${index * 0.1}s" 
-                 onclick="openLightbox('${escapeHtml(photo.image_url)}')">
-                <img src="${escapeHtml(photo.image_url)}" alt="${escapeHtml(photo.title)}" 
-                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%22200%22 y=%22150%22 text-anchor=%22middle%22 fill=%22%23999%22%3E暂无图片%3C/text%3E%3C/svg%3E'">
-                <div class="gallery-overlay">
-                    <div class="gallery-caption">
-                        <h4>${escapeHtml(photo.title)}</h4>
-                        <p>${escapeHtml(photo.description || '')}</p>
-                    </div>
+
+        container.innerHTML = photos.map(photo => {
+            const thumbUrl = photo.thumb_url || photo.image_url;
+            const takenAt = photo.taken_at ? `拍摄于 ${formatTakenAt(photo.taken_at)}` : '';
+            return `
+            <figure class="gallery-item" data-photo-id="${photo.id}">
+                <div class="gallery-photo">
+                    <img src="${escapeHtml(thumbUrl)}" alt="${escapeHtml(photo.title)}"
+                         loading="lazy" onerror="handleImgError(this)">
                 </div>
-            </div>
-        `).join('');
-        
+                <figcaption class="gallery-caption">
+                    <h4>${escapeHtml(photo.title)}</h4>
+                    ${takenAt ? `<p class="gallery-date">${takenAt}</p>` : ''}
+                    ${photo.description ? `<p class="gallery-desc">${escapeHtml(photo.description)}</p>` : ''}
+                </figcaption>
+            </figure>
+        `;
+        }).join('');
+
+        // 点击查看原图
+        container.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const photo = photos.find(p => String(p.id) === item.dataset.photoId);
+                if (photo) {
+                    openLightbox(photo);
+                }
+            });
+        });
+
     } catch (error) {
-        container.innerHTML = '<p style="text-align:center;color:#fff;">加载失败，请刷新重试</p>';
+        container.innerHTML = '<p class="gallery-empty">照片加载失败，请稍后刷新重试</p>';
         console.error('加载照片失败:', error);
     }
 }
 
 /**
- * 打开图片查看器
+ * 打开图片查看器（展示原图及说明）
  */
-function openLightbox(imageUrl) {
+function openLightbox(photo) {
     const modal = document.getElementById('lightboxModal');
     const image = document.getElementById('lightboxImage');
-    
-    image.src = imageUrl;
+    const title = document.getElementById('lightboxTitle');
+    const date = document.getElementById('lightboxDate');
+    const desc = document.getElementById('lightboxDesc');
+    const caption = document.getElementById('lightboxCaption');
+
+    image.onerror = () => handleImgError(image);
+    image.src = photo.image_url;
+    image.alt = photo.title || '';
+
+    title.textContent = photo.title || '';
+    date.textContent = photo.taken_at ? `拍摄于 ${formatTakenAt(photo.taken_at)}` : '';
+    desc.textContent = photo.description || '';
+
+    // 没有任何文字信息时隐藏说明栏
+    caption.style.display = (photo.title || photo.taken_at || photo.description) ? '' : 'none';
+
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -304,8 +416,8 @@ async function loadMessages() {
             return;
         }
         
-        container.innerHTML = messages.map((msg, index) => `
-            <div class="message-card fade-in" style="animation-delay: ${index * 0.1}s">
+        container.innerHTML = messages.map(msg => `
+            <div class="message-card">
                 <p class="message-content">${escapeHtml(msg.content)}</p>
                 <div class="message-author">
                     <div class="message-avatar">${msg.author_name.charAt(0).toUpperCase()}</div>
@@ -460,6 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 加载数据
     loadConfig();
     loadLifeEvents();
+    loadAlbums();
     loadPhotos();
     loadMessages();
     

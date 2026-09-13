@@ -101,6 +101,25 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// 照片加载失败时的温和占位图
+const PHOTO_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">' +
+    '<rect width="400" height="300" fill="#ece7db"/>' +
+    '<g fill="none" stroke="#b9b2a2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' +
+    '<rect x="160" y="100" width="80" height="64" rx="4"/>' +
+    '<circle cx="180" cy="120" r="6"/>' +
+    '<path d="M166 156 L186 136 L200 148 L214 134 L234 156"/>' +
+    '</g>' +
+    '<text x="200" y="200" text-anchor="middle" fill="#8f8878" font-size="15" font-family="sans-serif">照片暂时无法显示</text>' +
+    '</svg>'
+);
+
+function handleImgError(img) {
+    img.onerror = null;
+    img.src = PHOTO_PLACEHOLDER;
+}
+window.handleImgError = handleImgError;
+
 // 格式化日期
 function formatDate(dateStr) {
     if (!dateStr) return '';
@@ -148,8 +167,11 @@ function loadPageData(page) {
         case 'life-events':
             loadLifeEvents();
             break;
+        case 'albums':
+            loadAlbums();
+            break;
         case 'photos':
-            loadPhotos();
+            loadAlbumOptions().then(loadPhotos);
             break;
         case 'messages':
             loadMessages();
@@ -326,29 +348,179 @@ async function deleteEvent(id) {
     });
 }
 
+// ==================== 相册管理 ====================
+
+let albumsData = [];
+
+async function loadAlbums() {
+    const tbody = document.getElementById('albumsTableBody');
+
+    try {
+        const response = await apiRequest('/admin/albums');
+        albumsData = response.data || [];
+
+        if (albumsData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;">暂无相册，点击上方按钮添加</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = albumsData.map(album => `
+            <tr>
+                <td>${album.id}</td>
+                <td>${escapeHtml(album.name)}</td>
+                <td>${escapeHtml(album.description || '—')}</td>
+                <td>${album.photo_count ?? 0}</td>
+                <td>${album.sort_order}</td>
+                <td class="actions">
+                    <button class="btn btn-sm btn-secondary btn-icon" onclick="editAlbum(${album.id})" title="编辑">✏️</button>
+                    <button class="btn btn-sm btn-danger btn-icon" onclick="deleteAlbum(${album.id})" title="删除">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f00;">加载失败</td></tr>';
+    }
+}
+
+function showAlbumModal(album = null) {
+    const modal = document.getElementById('albumModal');
+    const title = document.getElementById('albumModalTitle');
+
+    document.getElementById('albumId').value = album?.id || '';
+    document.getElementById('albumName').value = album?.name || '';
+    document.getElementById('albumDescription').value = album?.description || '';
+    document.getElementById('albumSort').value = album?.sort_order || 0;
+
+    title.textContent = album ? '编辑相册' : '添加相册';
+    modal.classList.add('active');
+}
+
+function closeAlbumModal() {
+    document.getElementById('albumModal').classList.remove('active');
+}
+
+function editAlbum(id) {
+    const album = albumsData.find(a => a.id === id);
+    if (album) {
+        showAlbumModal(album);
+    }
+}
+
+async function saveAlbum(e) {
+    e.preventDefault();
+
+    const id = document.getElementById('albumId').value;
+    const data = {
+        name: document.getElementById('albumName').value.trim(),
+        description: document.getElementById('albumDescription').value.trim(),
+        sort_order: parseInt(document.getElementById('albumSort').value) || 0
+    };
+
+    try {
+        if (id) {
+            await apiRequest(`/admin/albums/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+            showToast('相册更新成功');
+        } else {
+            await apiRequest('/admin/albums', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            showToast('相册添加成功');
+        }
+
+        closeAlbumModal();
+        loadAlbums();
+
+    } catch (error) {
+        showToast(error.message || '保存失败', 'error');
+    }
+}
+
+async function deleteAlbum(id) {
+    const album = albumsData.find(a => a.id === id);
+    const count = album?.photo_count ?? 0;
+    const hint = count > 0
+        ? `相册「${album?.name || id}」中有 ${count} 张照片，删除相册后这些照片将转为未分类。确定删除吗？`
+        : `确定要删除相册「${album?.name || id}」吗？`;
+
+    showConfirm(hint, async () => {
+        try {
+            await apiRequest(`/admin/albums/${id}`, { method: 'DELETE' });
+            showToast('相册删除成功');
+            loadAlbums();
+        } catch (error) {
+            showToast(error.message || '删除失败', 'error');
+        }
+    });
+}
+
 // ==================== 照片管理 ====================
 
 let photosData = [];
+let photoAlbumFilter = '';
+
+/**
+ * 加载相册选项（用于筛选下拉与照片表单下拉）
+ */
+async function loadAlbumOptions() {
+    try {
+        const response = await apiRequest('/admin/albums');
+        albumsData = response.data || [];
+    } catch (error) {
+        albumsData = [];
+    }
+
+    const options = albumsData.map(a =>
+        `<option value="${a.id}">${escapeHtml(a.name)}</option>`
+    ).join('');
+
+    // 照片页筛选下拉
+    const filter = document.getElementById('photoAlbumFilter');
+    if (filter) {
+        const current = filter.value;
+        filter.innerHTML = '<option value="">全部相册</option>' + options;
+        filter.value = current;
+        // 若原筛选相册已被删除，回退为"全部相册"并同步状态
+        if (filter.value !== current) {
+            photoAlbumFilter = '';
+        }
+    }
+
+    // 照片表单下拉
+    const select = document.getElementById('photoAlbum');
+    if (select) {
+        select.innerHTML = '<option value="">未分类</option>' + options;
+    }
+}
 
 async function loadPhotos() {
     const grid = document.getElementById('photosGrid');
-    
+
     try {
-        const response = await apiRequest('/admin/photos');
+        const endpoint = photoAlbumFilter ? `/admin/photos?album_id=${photoAlbumFilter}` : '/admin/photos';
+        const response = await apiRequest(endpoint);
         photosData = response.data || [];
-        
+
         if (photosData.length === 0) {
             grid.innerHTML = '<p style="text-align:center;color:#666;grid-column:1/-1;">暂无照片，点击上方按钮添加</p>';
             return;
         }
-        
+
         grid.innerHTML = photosData.map(photo => `
             <div class="photo-card">
-                <img class="photo-image" src="${escapeHtml(photo.image_url)}" alt="${escapeHtml(photo.title)}" 
-                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 200%22%3E%3Crect fill=%22%23ddd%22 width=%22300%22 height=%22200%22/%3E%3Ctext x=%22150%22 y=%22100%22 text-anchor=%22middle%22 fill=%22%23999%22%3E暂无图片%3C/text%3E%3C/svg%3E'">
+                <img class="photo-image" src="${escapeHtml(photo.thumb_url || photo.image_url)}" alt="${escapeHtml(photo.title)}"
+                     loading="lazy" onerror="handleImgError(this)">
                 <div class="photo-info">
                     <h4 class="photo-title">${escapeHtml(photo.title)}</h4>
-                    <p class="photo-desc">${escapeHtml(photo.description) || '暂无描述'}</p>
+                    <p class="photo-meta">
+                        <span class="photo-album-tag">${escapeHtml(photo.album_name || '未分类')}</span>
+                        ${photo.taken_at ? `<span class="photo-date">📅 ${photo.taken_at}</span>` : ''}
+                    </p>
+                    <p class="photo-desc">${escapeHtml(photo.description) || '暂无说明'}</p>
                     <div class="photo-actions">
                         <button class="btn btn-sm btn-secondary" onclick="editPhoto(${photo.id})">编辑</button>
                         <button class="btn btn-sm btn-danger" onclick="deletePhoto(${photo.id})">删除</button>
@@ -356,7 +528,7 @@ async function loadPhotos() {
                 </div>
             </div>
         `).join('');
-        
+
     } catch (error) {
         grid.innerHTML = '<p style="text-align:center;color:#f00;grid-column:1/-1;">加载失败</p>';
     }
@@ -367,22 +539,25 @@ function showPhotoModal(photo = null) {
     const title = document.getElementById('photoModalTitle');
     const preview = document.getElementById('photoPreview');
     const placeholder = document.getElementById('uploadPlaceholder');
-    
+
     document.getElementById('photoId').value = photo?.id || '';
     document.getElementById('photoTitle').value = photo?.title || '';
+    document.getElementById('photoAlbum').value = photo?.album_id || '';
+    document.getElementById('photoTakenAt').value = photo?.taken_at || '';
     document.getElementById('photoDescription').value = photo?.description || '';
     document.getElementById('photoUrl').value = photo?.image_url || '';
+    document.getElementById('photoThumbUrl').value = photo?.thumb_url || '';
     document.getElementById('photoSort').value = photo?.sort_order || 0;
-    
+
     if (photo?.image_url) {
-        preview.src = photo.image_url;
+        preview.src = photo.thumb_url || photo.image_url;
         preview.style.display = 'block';
         placeholder.style.display = 'none';
     } else {
         preview.style.display = 'none';
         placeholder.style.display = 'block';
     }
-    
+
     title.textContent = photo ? '编辑照片' : '添加照片';
     modal.classList.add('active');
 }
@@ -402,19 +577,20 @@ function editPhoto(id) {
 async function handlePhotoUpload(file) {
     const preview = document.getElementById('photoPreview');
     const placeholder = document.getElementById('uploadPlaceholder');
-    
+
     try {
         placeholder.innerHTML = '<span>⏳</span><p>上传中...</p>';
-        
+
         const result = await uploadFile(file);
-        
+
         document.getElementById('photoUrl').value = result.url;
-        preview.src = result.url;
+        document.getElementById('photoThumbUrl').value = result.thumb_url || result.url;
+        preview.src = result.thumb_url || result.url;
         preview.style.display = 'block';
         placeholder.style.display = 'none';
-        
+
         showToast('图片上传成功');
-        
+
     } catch (error) {
         placeholder.innerHTML = '<span>📷</span><p>点击上传照片</p>';
         showToast(error.message || '上传失败', 'error');
@@ -423,22 +599,25 @@ async function handlePhotoUpload(file) {
 
 async function savePhoto(e) {
     e.preventDefault();
-    
+
     const id = document.getElementById('photoId').value;
     const imageUrl = document.getElementById('photoUrl').value;
-    
+
     if (!imageUrl) {
         showToast('请上传照片', 'error');
         return;
     }
-    
+
     const data = {
         title: document.getElementById('photoTitle').value,
+        album_id: document.getElementById('photoAlbum').value || null,
+        taken_at: document.getElementById('photoTakenAt').value || null,
         description: document.getElementById('photoDescription').value,
         image_url: imageUrl,
+        thumb_url: document.getElementById('photoThumbUrl').value || null,
         sort_order: parseInt(document.getElementById('photoSort').value) || 0
     };
-    
+
     try {
         if (id) {
             await apiRequest(`/admin/photos/${id}`, {
@@ -453,10 +632,10 @@ async function savePhoto(e) {
             });
             showToast('照片添加成功');
         }
-        
+
         closePhotoModal();
         loadPhotos();
-        
+
     } catch (error) {
         showToast(error.message || '保存失败', 'error');
     }
@@ -603,9 +782,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 事件表单提交
     document.getElementById('eventForm').addEventListener('submit', saveEvent);
-    
+
+    // 相册表单提交
+    document.getElementById('albumForm').addEventListener('submit', saveAlbum);
+
     // 照片表单提交
     document.getElementById('photoForm').addEventListener('submit', savePhoto);
+
+    // 照片相册筛选
+    document.getElementById('photoAlbumFilter').addEventListener('change', (e) => {
+        photoAlbumFilter = e.target.value;
+        loadPhotos();
+    });
     
     // 照片上传
     document.getElementById('photoFile').addEventListener('change', (e) => {

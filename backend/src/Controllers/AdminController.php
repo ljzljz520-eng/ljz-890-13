@@ -7,6 +7,7 @@ namespace App\Controllers;
 
 use App\Models\SiteConfig;
 use App\Models\LifeEvent;
+use App\Models\Album;
 use App\Models\Photo;
 use App\Models\Message;
 use App\Utils\Response;
@@ -18,22 +19,25 @@ class AdminController
         require_once __DIR__ . '/../Models/BaseModel.php';
         require_once __DIR__ . '/../Models/SiteConfig.php';
         require_once __DIR__ . '/../Models/LifeEvent.php';
+        require_once __DIR__ . '/../Models/Album.php';
         require_once __DIR__ . '/../Models/Photo.php';
         require_once __DIR__ . '/../Models/Message.php';
     }
-    
+
     /**
      * 仪表盘数据
      */
     public function dashboard(): array
     {
         $eventModel = new LifeEvent();
+        $albumModel = new Album();
         $photoModel = new Photo();
         $messageModel = new Message();
-        
+
         return Response::success([
             'stats' => [
                 'lifeEventsCount' => $eventModel->count(),
+                'albumsCount' => $albumModel->count(),
                 'photosCount' => $photoModel->count(),
                 'messagesCount' => $messageModel->count(),
                 'pendingMessagesCount' => $messageModel->countPending()

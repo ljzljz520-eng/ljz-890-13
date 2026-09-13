@@ -551,6 +551,61 @@ body {
     gap: 8px;
 }
 
+/* 照片元信息（相册、拍摄时间） */
+.photo-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.photo-album-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    color: var(--color-gold-dark, #B8960E);
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 9999px;
+}
+
+.photo-date {
+    font-size: 0.8rem;
+    color: var(--color-gray-500);
+}
+
+/* 页面提示文字 */
+.page-tip {
+    margin: -8px 0 20px;
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+}
+
+/* 筛选栏 */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-bar label {
+    font-size: 0.9rem;
+    color: var(--color-gray-600);
+    white-space: nowrap;
+}
+
+.filter-bar .form-select {
+    width: auto;
+    min-width: 160px;
+    margin: 0;
+}
+
 /* ==================== 状态标签 ==================== */
 .status-badge {
     display: inline-flex;
